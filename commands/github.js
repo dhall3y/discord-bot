@@ -49,17 +49,25 @@ module.exports = {
 		const user = await dictResult.body.json();
 
 		const embedResponse = new EmbedBuilder()
-			.setAuthor({ name: '🟢 last activity: +90 days', url: user.html_url })
+			.setAuthor({ name: '🟢  last activity: today', url: user.html_url })
 			.setThumbnail(user.avatar_url)
 			.setTitle(user.name)
 			.setDescription(user.bio);
 
-		if (typeof lastEvent[0] !== 'undefined') {
-			const lastEventLocalTime = new Date(lastEvent[0].created_at);
-			embedResponse.setAuthor({ name: `🟢  last activity: ${lastEventLocalTime.toDateString().split(' ').slice(1).join(' ')}`, url: user.html_url });
-		}
 		if (user.name == null) {
 			embedResponse.setTitle(user.login);
+		}
+
+		if (typeof lastEvent[0] === 'undefined') {
+			embedResponse.setAuthor({ name: '🟢 last activity: +90 days', url: user.html_url });
+			await interaction.reply({ embeds: [embedResponse] });
+		}
+
+		const lastEventLocalTime = new Date(lastEvent[0].created_at).toDateString().split(' ').slice(1).join(' ');
+		const today = new Date().toDateString().split(' ').slice(1).join(' ');
+
+		if (today !== lastEventLocalTime) {
+			embedResponse.setAuthor({ name: `🟢  last activity: ${lastEventLocalTime}`, url: user.html_url });
 		}
 
 		await interaction.reply({ embeds: [embedResponse] });
