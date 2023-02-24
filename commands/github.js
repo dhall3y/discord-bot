@@ -37,10 +37,12 @@ module.exports = {
 	},
 	async execute(interaction) {
 		const query = interaction.options.getString('username');
+		// request user info from query
 		const dictResult = await request(`https://api.github.com/users/${query}`, {
 			headers: { 'User-Agent': 'request' },
 		});
 
+		// request user last event (push / issues / etc)
 		const eventRes = await request(`https://api.github.com/users/${query}/events?per_page=1`, {
 			headers: { 'User-Agent': 'request' },
 		});
@@ -54,15 +56,18 @@ module.exports = {
 			.setTitle(user.name)
 			.setDescription(user.bio);
 
+		// if user doesn't has a name set, show username
 		if (user.name == null) {
 			embedResponse.setTitle(user.login);
 		}
 
+		// if user doesn't have any recent event <90 days
 		if (typeof lastEvent[0] === 'undefined') {
 			embedResponse.setAuthor({ name: '🟢 last activity: +90 days', url: user.html_url });
 			await interaction.reply({ embeds: [embedResponse] });
 		}
 
+		// check if last event date is today
 		const lastEventLocalTime = new Date(lastEvent[0].created_at).toDateString().split(' ').slice(1).join(' ');
 		const today = new Date().toDateString().split(' ').slice(1).join(' ');
 
